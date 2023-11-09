@@ -1,0 +1,3 @@
+[submodule "jawfrac"]
+	path = jawfrac
+	url = https://github.com/nnistelrooij/jawfrac.git
