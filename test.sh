@@ -3,9 +3,8 @@ export OUT_DIR=test/out
 
 chmod 777 $OUT_DIR
 
-docker load < condyles_resorption.tar.gz
+docker load < condyles_segmentation.tar.gz
 docker run \
     -v $IN_DIR:/input \
     -v $OUT_DIR:/output \
-    --gpus all \
-    condyles:resorption
+    condyles:segmentation

@@ -1,4 +1,5 @@
 import copy
+import multiprocessing as mp
 from pathlib import Path
 from typing import Any, List
 
@@ -147,29 +148,40 @@ class DICOM:
         return DICOM(spacing, positions, orientation, image)
     
 
+def process_case(case_dir: Path):
+    if not case_dir.is_dir():
+        return case_dir
+    
+    if not case_dir.name.endswith('fixed'):
+        return case_dir
+
+    for moment in ['Preop', 'Recall']:
+        cbct_dir = case_dir / moment / 'CBCT'
+        dicom = DICOM.read_files(cbct_dir)
+        img = dicom.to_numpy()
+
+        out_file = case_dir / f'{moment}_CBCT.nii.gz'
+        nii = nibabel.Nifti1Image(img, dicom.affine)
+        nibabel.save(nii, out_file)
+
+        for volume in ['Condylar mask', 'Mandibular mask']:
+            dcm_dir = case_dir / moment / volume
+            dicom = DICOM.read_files(dcm_dir)
+            mask = dicom.to_numpy() != img
+
+            out_file = case_dir / f'{moment}_{volume}.nii.gz'
+            nii = nibabel.Nifti1Image(mask.astype(np.uint16), dicom.affine)
+            nibabel.save(nii, out_file)
+    
+    return case_dir
+
+    
+
 if __name__ == '__main__':
-    root = Path('/mnt/diag/condyles/Esbjerg')
+    root = Path('/mnt/diag/CBCT/condyle_segmentation/Esbjerg')
 
-    in_dir = root / 'Data'
-    out_dir = root / 'Cases'
-
-    for dcm_dir in tqdm(sorted(in_dir.glob('*'))):
-        if not dcm_dir.is_dir():
-            continue
-
-        print(dcm_dir)
-
-        # dicom = DICOM.read_files(dcm_dir)
-
-        case = dcm_dir.name.split('-')[0].strip()
-        moment = dcm_dir.name.split('-')[-1].strip()
-        out_file = out_dir / f'Case {case} - {moment}_0000.nii.gz'
-
-        dicom_nii = nibabel.load(out_file)
-        dicom = np.asarray(dicom_nii.dataobj)
-
-        dicom = np.transpose(dicom, (1, 2, 0))[::-1, ::-1]
-
-        out_file2 = out_dir / f'Case {case} - {moment}_0000.nii.gz'
-        nii = nibabel.Nifti1Image(dicom, dicom_nii.affine)
-        nibabel.save(nii, out_file2)
+    with mp.Pool(1) as p:
+        i = p.imap_unordered(process_case, sorted(root.glob('*')))
+        t = tqdm(i, total=len(sorted(root.glob('*'))))
+        for case_dir in t:
+            t.set_description(case_dir.as_posix())
