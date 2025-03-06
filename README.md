@@ -34,9 +34,10 @@ Please request model checkpoints from Niels van Nistelrooij (Niels dot vanNistel
 ``` bibtex
 @article{condyle_changes,
   author={Holte, Michael Boelstoft and van Nistelrooij, Niels and Vinayahalingam, Shankeeth and Berg{\'e}, Stefaan and Xi, Tong and Pinholt, Else Marie},
-  year={2024},
-  month={06},
-  title={Validation of a Fully Automatic Assessment of Volume Changes in Mandibular Condyles},
-  note={Submitted to Clinical Oral Investigations}
+  year={2025},
+  month={03},
+  title={Validation of a fully automatic assessment of volume changes in the mandibular condyles following bimaxillary surgery},
+  journal={International Journal of Oral and Maxillofacial Surgery},
+  doi={10.1016/j.ijom.2025.02.009}
 }
 ```
